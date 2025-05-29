@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWP vs Loan EMI Strategy Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --dark-lighter: #334155;
+            --gray: #64748b;
+            --gray-light: #e2e8f0;
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #6366f1 50%, #8b5cf6 75%, #06b6d4 100%);
+            background-size: 400% 400%;
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 1rem;
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.8),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, 
+                rgba(15, 23, 42, 0.9) 0%, 
+                rgba(30, 41, 59, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(6, 182, 212, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 50%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+            font-weight: 400;
+            color: #cbd5e1;
+        }
+
+        .content {
+            padding: 2rem;
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .strategy-note {
+            background: linear-gradient(135deg, 
+                rgba(251, 191, 36, 0.15) 0%, 
+                rgba(245, 158, 11, 0.1) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 20px;
+            color: #fbbf24;
+            box-shadow: 
+                0 10px 30px rgba(251, 191, 36, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #fbbf24;
+        }
+
+        .strategy-note h3 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            color: #fcd34d;
+        }
+
+        .test-scenarios {
+            background: linear-gradient(135deg, 
+                rgba(6, 182, 212, 0.15) 0%, 
+                rgba(8, 145, 178, 0.1) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            border-radius: 20px;
+            color: #22d3ee;
+            box-shadow: 
+                0 10px 30px rgba(6, 182, 212, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #06b6d4;
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            background: linear-gradient(135deg, 
+                rgba(30, 41, 59, 0.8) 0%, 
+                rgba(51, 65, 85, 0.6) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                var(--primary) 0%, 
+                var(--secondary) 50%, 
+                var(--accent) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .input-group:hover {
+            transform: translateY(-8px);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .input-group:hover::before {
+            opacity: 1;
+        }
+
+        .input-group h3 {
+            color: var(--white);
+            margin-bottom: 2rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-row {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.75rem;
+            color: #cbd5e1;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.025em;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            color: var(--white);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        input::placeholder {
+            color: rgba(203, 213, 225, 0.5);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 
+                0 0 0 3px rgba(99, 102, 241, 0.3),
+                inset 0 2px 4px rgba(0, 0, 0, 0.3),
+                0 4px 12px rgba(99, 102, 241, 0.2);
+            background: rgba(30, 41, 59, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, 
+                var(--primary) 0%, 
+                var(--primary-dark) 25%,
+                var(--secondary) 75%,
+                var(--accent) 100%);
+            color: var(--white);
+            border: none;
+            padding: 1.25rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 2rem auto;
+            display: block;
+            box-shadow: 
+                0 20px 40px rgba(99, 102, 241, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.025em;
+        }
+
+        .calculate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.3), 
+                transparent);
+            transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 30px 60px rgba(99, 102, 241, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .calculate-btn:hover::before {
+            left: 100%;
+        }
+
+        .calculate-btn:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+
+        .results-section {
+            padding: 2rem;
+            background: rgba(15, 23, 42, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-top: 1rem;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, 
+                rgba(30, 41, 59, 0.9) 0%, 
+                rgba(51, 65, 85, 0.8) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                var(--primary) 0%, 
+                var(--secondary) 50%, 
+                var(--accent) 100%);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .summary-card.success::before {
+            background: linear-gradient(90deg, 
+                var(--success) 0%, 
+                #22c55e 100%);
+        }
+
+        .summary-card.warning::before {
+            background: linear-gradient(90deg, 
+                var(--warning) 0%, 
+                #fbbf24 100%);
+        }
+
+        .summary-card.danger::before {
+            background: linear-gradient(90deg, 
+                var(--danger) 0%, 
+                #f87171 100%);
+        }
+
+        .summary-card h4 {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .summary-card .value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--white);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, 
+                rgba(30, 41, 59, 0.8) 0%, 
+                rgba(51, 65, 85, 0.6) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .info-card h4 {
+            color: var(--white);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .info-card p {
+            color: #cbd5e1;
+            line-height: 1.7;
+            font-weight: 400;
+        }
+
+        .debt-free-alert {
+            background: linear-gradient(135deg, 
+                rgba(16, 185, 129, 0.2) 0%, 
+                rgba(5, 150, 105, 0.1) 100%);
+            border-left: 4px solid var(--success);
+            color: #6ee7b7;
+        }
+
+        .corpus-breakdown {
+            background: linear-gradient(135deg, 
+                rgba(6, 182, 212, 0.2) 0%, 
+                rgba(8, 145, 178, 0.1) 100%);
+            border-left: 4px solid var(--accent);
+            color: #67e8f9;
+        }
+
+        /* ================================ */
+        /* LIGHT TABLE THEME - OVERRIDE ALL DARK STYLES */
+        /* ================================ */
+
+        .table-container {
+            background: #ffffff !important;
+            backdrop-filter: none !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #ffffff !important;
+            color: #1f2937 !important;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid #e5e7eb !important;
+            background: #ffffff !important;
+            color: #1f2937 !important;
+        }
+
+        th {
+            background: #f3f4f6 !important;
+            color: #374151 !important;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        th:first-child,
+        td:first-child {
+            position: sticky;
+            left: 0;
+            background: #f3f4f6 !important;
+            color: #1f2937 !important;
+            font-weight: 700;
+            z-index: 11;
+            border-right: 1px solid #e5e7eb !important;
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9fafb !important;
+        }
+
+        tbody tr:nth-child(even) td {
+            background: #f9fafb !important;
+        }
+
+        tr:hover {
+            background: #e0e7ff !important;
+        }
+
+        tr:hover td {
+            background: #e0e7ff !important;
+            color: #1f2937 !important;
+        }
+
+        tr:hover td:first-child {
+            background: #ddd6fe !important;
+            color: #1f2937 !important;
+        }
+
+        .positive {
+            color: #059669 !important;
+            font-weight: 700;
+        }
+
+        .negative {
+            color: #dc2626 !important;
+            font-weight: 700;
+        }
+
+        .loan-phase {
+            border-left: 3px solid #dc2626 !important;
+            background: #fee2e2 !important;
+        }
+
+        .loan-phase td {
+            background: #fee2e2 !important;
+            color: #b91c1c !important;
+        }
+
+        .growth-phase {
+            border-left: 3px solid #059669 !important;
+            background: #d1fae5 !important;
+        }
+
+        .growth-phase td {
+            background: #d1fae5 !important;
+            color: #065f46 !important;
+        }
+
+        .debt-free-milestone {
+            background: #dcfce7 !important;
+            border-left: 3px solid #22c55e !important;
+        }
+
+        .debt-free-milestone td {
+            background: #dcfce7 !important;
+            color: #14532d !important;
+            font-weight: bold;
+        }
+
+        .debt-free-milestone td:first-child {
+            background: #22c55e !important;
+            color: #ffffff !important;
+            box-shadow: 2px 0 4px rgba(34, 197, 94, 0.3) !important;
+        }
+
+        .unsustainable {
+            background: #fef2f2 !important;
+        }
+
+        .unsustainable td {
+            background: #fef2f2 !important;
+            color: #b91c1c !important;
+        }
+
+        .corpus-reducing {
+            background: #fef3c7 !important;
+        }
+
+        .corpus-reducing td {
+            background: #fef3c7 !important;
+            color: #92400e !important;
+        }
+
+        .year-marker {
+            background: #dbeafe !important;
+            font-weight: 700;
+        }
+
+        .year-marker td {
+            background: #dbeafe !important;
+            color: #1e40af !important;
+        }
+
+        /* Custom scrollbar for light theme */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        }
+
+        /* Loading states */
+        .calculating {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid var(--white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 0 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .input-section {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: 0.5rem;
+                border-radius: 16px;
+            }
+            
+            .header {
+                padding: 2rem 1rem;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+            
+            th, td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            .input-group {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-group {
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            animation-delay: 0.1s;
+            animation-fill-mode: both;
+        }
+
+        .summary-card {
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            animation-fill-mode: both;
+        }
+
+        .summary-card:nth-child(1) { animation-delay: 0.1s; }
+        .summary-card:nth-child(2) { animation-delay: 0.2s; }
+        .summary-card:nth-child(3) { animation-delay: 0.3s; }
+        .summary-card:nth-child(4) { animation-delay: 0.4s; }
+        .summary-card:nth-child(5) { animation-delay: 0.5s; }
+        .summary-card:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 SWP vs EMI Strategy</h1>
+            <p>Professional Financial Planning & After-Tax Analysis</p>
+        </div>
+        
+        <div class="content">
+            <div class="strategy-note">
+                <h3>📋 Executive Strategy Framework</h3>
+                <p><strong>Growth Scenario:</strong> When SIP + Returns > EMI → Corpus accelerates exponentially</p>
+                <p><strong>Reduction Scenario:</strong> When SIP + Returns < EMI → Corpus depletes systematically</p>
+            </div>
+            
+            <div class="test-scenarios" id="scenarioAnalysis">
+                <h4>🧪 Advanced Scenario Analysis will be generated after calculation</h4>
+            </div>
+            
+            <div class="input-section">
+                <div class="input-group">
+                    <h3>🏦 Loan Configuration</h3>
+                    <div class="form-row">
+                        <label for="loanAmount">Loan Amount (₹)</label>
+                        <input type="number" id="loanAmount" value="2500000" step="10000" placeholder="Enter loan amount">
+                    </div>
+                    <div class="form-row">
+                        <label for="loanRate">Interest Rate (% per annum)</label>
+                        <input type="number" id="loanRate" value="8.1" step="0.1" placeholder="Enter interest rate">
+                    </div>
+                    <div class="form-row">
+                        <label for="loanTenure">Tenure (Years)</label>
+                        <input type="number" id="loanTenure" value="15" step="1" placeholder="Enter loan tenure">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <h3>📈 Investment Strategy</h3>
+                    <div class="form-row">
+                        <label for="lumpSum">Initial Lump Sum (₹)</label>
+                        <input type="number" id="lumpSum" value="1000000" step="10000" placeholder="Enter initial investment">
+                    </div>
+                    <div class="form-row">
+                        <label for="sipAmount">Monthly SIP Amount (₹)</label>
+                        <input type="number" id="sipAmount" value="10000" step="1000" placeholder="Enter monthly SIP">
+                    </div>
+                    <div class="form-row">
+                        <label for="nominalReturn">Nominal Return Rate (% per annum)</label>
+                        <input type="number" id="nominalReturn" value="12" step="0.1" placeholder="Enter expected returns">
+                    </div>
+                    <div class="form-row">
+                        <label for="taxRate">Tax Rate on Returns (%)</label>
+                        <input type="number" id="taxRate" value="10" step="0.1" placeholder="Enter tax rate">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculateWithPerformance()">
+                🚀 Execute Strategy Analysis
+                <div class="loading-spinner" id="loadingSpinner"></div>
+            </button>
+            
+            <div class="results-section" id="resultsSection">
+                <div class="info-card" id="debtFreeAlert"></div>
+                <div class="info-card" id="corpusBreakdown"></div>
+                
+                <div class="summary-cards" id="summaryCards"></div>
+                
+                <div class="info-card" id="phaseIndicator"></div>
+                
+                <div class="table-container">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Year</th>
+                                <th>Phase</th>
+                                <th>Corpus Start (₹)</th>
+                                <th>Monthly SIP (₹)</th>
+                                <th>After-Tax Growth (₹)</th>
+                                <th>Corpus After Growth (₹)</th>
+                                <th>SWP Withdrawn (₹)</th>
+                                <th>Final Corpus (₹)</th>
+                                <th>Change (₹)</th>
+                                <th>Loan Outstanding (₹)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Debounce function to limit calculation frequency
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // Show loading spinner during calculation
+        function showLoading() {
+            const btn = document.querySelector('.calculate-btn');
+            const spinner = document.getElementById('loadingSpinner');
+            const resultsSection = document.getElementById('resultsSection');
+            btn.classList.add('calculating');
+            spinner.style.display = 'inline-block';
+            resultsSection.style.opacity = '0.5';
+        }
+
+        function hideLoading() {
+            const btn = document.querySelector('.calculate-btn');
+            const spinner = document.getElementById('loadingSpinner');
+            const resultsSection = document.getElementById('resultsSection');
+            btn.classList.remove('calculating');
+            spinner.style.display = 'none';
+            resultsSection.style.opacity = '1';
+        }
+
+        // Optimized calculation function
+        function calculate() {
+            // Get input values
+            const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+            const loanRate = parseFloat(document.getElementById('loanRate').value) / 100;
+            const loanTenure = parseInt(document.getElementById('loanTenure').value);
+            const lumpSum = parseFloat(document.getElementById('lumpSum').value);
+            const sipAmount = parseFloat(document.getElementById('sipAmount').value);
+            const nominalReturn = parseFloat(document.getElementById('nominalReturn').value) / 100;
+            const taxRate = parseFloat(document.getElementById('taxRate').value) / 100;
+            
+            // Calculate after-tax return rate upfront
+            const afterTaxReturn = nominalReturn * (1 - taxRate);
+            const monthlyAfterTaxReturn = afterTaxReturn / 12;
+            
+            // Calculate EMI
+            const monthlyRate = loanRate / 12;
+            const totalLoanMonths = loanTenure * 12;
+            const emi = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalLoanMonths)) / 
+                       (Math.pow(1 + monthlyRate, totalLoanMonths) - 1);
+            
+            const totalMonths = 180;
+            const resultsData = [];
+            let totalCorpus = lumpSum;
+            let loanOutstanding = loanAmount;
+            let isSustainable = true;
+            let monthsToDepletion = 0;
+            let debtFreeMonth = 0;
+            let corpusReducingMonths = 0;
+            
+            // Optimized calculation loop
+            for (let month = 1; month <= totalMonths; month++) {
+                const year = Math.ceil(month / 12);
+                const corpusStart = totalCorpus;
+                
+                // Financial calculations
+                let workingCorpus = totalCorpus + sipAmount;
+                const afterTaxGrowth = workingCorpus * monthlyAfterTaxReturn;
+                const corpusAfterGrowth = workingCorpus + afterTaxGrowth;
+                const swpAmount = loanOutstanding > 1 ? emi : 0;
+                const finalCorpus = corpusAfterGrowth - swpAmount;
+                const change = finalCorpus - corpusStart;
+                
+                if (change < 0) corpusReducingMonths++;
+                
+                // Loan processing
+                let interestPayment = 0;
+                let principalPayment = 0;
+                let status = '';
+                let phase = '';
+                
+                if (swpAmount > 0) {
+                    interestPayment = loanOutstanding * monthlyRate;
+                    principalPayment = emi - interestPayment;
+                    principalPayment = Math.min(principalPayment, loanOutstanding);
+                    loanOutstanding -= principalPayment;
+                    
+                    if (loanOutstanding <= 1 && debtFreeMonth === 0) {
+                        debtFreeMonth = month;
+                        loanOutstanding = 0;
+                        status = '🎉 DEBT FREE!';
+                        phase = 'DEBT FREE';
+                    } else if (loanOutstanding < 50000) {
+                        status = 'Final Phase';
+                        phase = 'Loan Final';
+                    } else {
+                        status = 'Loan Active';
+                        phase = 'Loan Active';
+                    }
+                } else {
+                    status = 'Debt Free Growth';
+                    phase = 'Debt Free';
+                    loanOutstanding = 0;
+                }
+                
+                // Status checking
+                let statusClass = 'positive';
+                if (finalCorpus < 0) {
+                    statusClass = 'negative';
+                    status = 'STRATEGY FAILED';
+                    if (isSustainable) {
+                        isSustainable = false;
+                        monthsToDepletion = month;
+                    }
+                } else if (swpAmount > 0 && finalCorpus < emi * 3) {
+                    statusClass = 'negative';
+                    status = 'Critical - Low Corpus';
+                } else if (swpAmount > 0 && finalCorpus < emi * 6) {
+                    statusClass = 'negative';
+                    status = 'Warning - Monitor';
+                }
+                
+                resultsData.push({
+                    month, year, phase, corpusStart, sipAdded: sipAmount,
+                    afterTaxGrowth, corpusAfterGrowth, swpWithdrawn: swpAmount,
+                    finalCorpus: Math.max(0, finalCorpus), change,
+                    loanOutstanding: Math.max(0, loanOutstanding),
+                    interestPayment, principalPayment, status, statusClass,
+                    isDebtFree: loanOutstanding <= 1,
+                    isDebtFreeMonth: month === debtFreeMonth,
+                    isYearEnd: month % 12 === 0,
+                    isCorpusReducing: change < 0
+                });
+                
+                totalCorpus = Math.max(0, finalCorpus);
+                if (totalCorpus <= 0) break;
+            }
+            
+            // Display results
+            displayScenarioAnalysis(emi, sipAmount, afterTaxReturn, corpusReducingMonths);
+            displayDebtFreeAlert(debtFreeMonth, emi);
+            displayCorpusBreakdown(emi, nominalReturn, taxRate, afterTaxReturn);
+            displaySummaryCards(emi, resultsData, isSustainable, monthsToDepletion, debtFreeMonth, afterTaxReturn, corpusReducingMonths);
+            displayTableOptimized(resultsData);
+        }
+
+        // Optimized table rendering using DocumentFragment
+        function displayTableOptimized(resultsData) {
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            
+            resultsData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                // Apply classes based on row data
+                if (row.isDebtFreeMonth) {
+                    tr.className = 'debt-free-milestone';
+                } else if (row.isCorpusReducing) {
+                    tr.className = row.isDebtFree ? 'growth-phase corpus-reducing' : 'loan-phase corpus-reducing';
+                } else if (row.isYearEnd) {
+                    tr.className = row.isDebtFree ? 'growth-phase year-marker' : 'loan-phase year-marker';
+                } else if (row.isDebtFree) {
+                    tr.className = 'growth-phase';
+                } else {
+                    tr.className = 'loan-phase';
+                }
+                
+                if (row.statusClass === 'negative') {
+                    tr.classList.add('unsustainable');
+                }
+                
+                const changeColor = row.change >= 0 ? 'positive' : 'negative';
+                const changeSymbol = row.change >= 0 ? '+' : '';
+                
+                tr.innerHTML = `
+                    <td>${row.month}</td>
+                    <td>${row.year}</td>
+                    <td><strong>${row.phase}</strong></td>
+                    <td>₹${row.corpusStart.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
+                    <td>₹${row.sipAdded.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
+                    <td>₹${row.afterTaxGrowth.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
+                    <td>₹${row.corpusAfterGrowth.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
+                    <td><strong>₹${row.swpWithdrawn.toLocaleString('en-IN', {maximumFractionDigits: 0})}</strong></td>
+                    <td class="${row.statusClass}">₹${row.finalCorpus.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
+                    <td class="${changeColor}"><strong>${changeSymbol}₹${Math.abs(row.change).toLocaleString('en-IN', {maximumFractionDigits: 0})}</strong></td>
+                    <td><strong>₹${row.loanOutstanding.toLocaleString('en-IN', {maximumFractionDigits: 0})}</strong></td>
+                    <td class="${row.isDebtFreeMonth ? 'positive' : row.statusClass}"><strong>${row.status}</strong></td>
+                `;
+                
+                fragment.appendChild(tr);
+            });
+            
+            tbody.appendChild(fragment);
+        }
+
+        // Wrap original calculate function to include loading
+        function calculateWithPerformance() {
+            showLoading();
+            setTimeout(() => {
+                try {
+                    calculate();
+                } finally {
+                    hideLoading();
+                }
+            }, 100);
+        }
+
+        // Display functions (keeping existing implementations)
+        function displayScenarioAnalysis(emi, sipAmount, afterTaxReturn, corpusReducingMonths) {
+            const scenarioAnalysis = document.getElementById('scenarioAnalysis');
+            const monthlyReturnOnLumpsum = 1000000 * (afterTaxReturn / 12);
+            
+            const scenarioType = sipAmount + monthlyReturnOnLumpsum > emi ? 
+                'CORPUS GROWTH SCENARIO ✨' : 'CORPUS REDUCTION SCENARIO ⚠️';
+            
+            scenarioAnalysis.innerHTML = `
+                <h4>🧪 ${scenarioType}</h4>
+                <p><strong>Monthly EMI:</strong> ₹${emi.toLocaleString('en-IN', {maximumFractionDigits: 0})}</p>
+                <p><strong>Monthly SIP:</strong> ₹${sipAmount.toLocaleString('en-IN')}</p>
+                <p><strong>Initial Monthly Growth:</strong> ₹${monthlyReturnOnLumpsum.toLocaleString('en-IN', {maximumFractionDigits: 0})}</p>
+                <p><strong>Net Effect:</strong> ${sipAmount + monthlyReturnOnLumpsum > emi ? 'Growth Dominates 📈' : 'EMI Dominates 📉'}</p>
+                <p><strong>Reduction Months:</strong> ${corpusReducingMonths} out of 180 months</p>
+            `;
+        }
+        
+        function displayDebtFreeAlert(debtFreeMonth, emi) {
+            const debtFreeAlert = document.getElementById('debtFreeAlert');
+            
+            if (debtFreeMonth > 0) {
+                const debtFreeYear = Math.floor((debtFreeMonth - 1) / 12) + 1;
+                const debtFreeMonthInYear = ((debtFreeMonth - 1) % 12) + 1;
+                
+                debtFreeAlert.innerHTML = `
+                    <h4>🎉 DEBT-FREE MILESTONE ACHIEVED</h4>
+                    <p>Complete financial freedom achieved in <strong>Month ${debtFreeMonth}</strong> 
+                    (Year ${debtFreeYear}, Month ${debtFreeMonthInYear}). From Month ${debtFreeMonth + 1} onwards, pure wealth accumulation begins with accelerated growth.</p>
+                `;
+            } else {
+                debtFreeAlert.innerHTML = `
+                    <h4>⚠️ STRATEGY OPTIMIZATION REQUIRED</h4>
+                    <p>Current parameters may not achieve debt freedom within 180 months. Consider optimizing investment allocation for enhanced performance.</p>
+                `;
+            }
+        }
+        
+        function displayCorpusBreakdown(emi, nominalReturn, taxRate, afterTaxReturn) {
+            const corpusBreakdown = document.getElementById('corpusBreakdown');
+            
+            corpusBreakdown.innerHTML = `
+                <h4>💡 Advanced Strategy Mechanics</h4>
+                <p><strong>Monthly EMI:</strong> ₹${emi.toLocaleString('en-IN', {maximumFractionDigits: 0})}</p>
+                <p><strong>Execution Flow:</strong> Corpus Start → +SIP → +Growth → Peak Value → -SWP → Final Corpus</p>
+                <p><strong>After-Tax Returns:</strong> ${(afterTaxReturn * 100).toFixed(2)}% annually (${((afterTaxReturn / 12) * 100).toFixed(4)}% monthly)</p>
+                <p><strong>Performance Indicator:</strong> Final Corpus - Start Corpus (+ = wealth creation, - = corpus depletion)</p>
+            `;
+        }
+        
+        function displaySummaryCards(emi, resultsData, isSustainable, monthsToDepletion, debtFreeMonth, afterTaxReturn, corpusReducingMonths) {
+            const summaryCards = document.getElementById('summaryCards');
+            const phaseIndicator = document.getElementById('phaseIndicator');
+            
+            const finalCorpus = resultsData[resultsData.length - 1].finalCorpus;
+            const debtFreeCorpus = debtFreeMonth > 0 ? resultsData[debtFreeMonth - 1]?.finalCorpus || 0 : 0;
+            const totalSWP = resultsData.filter(r => r.swpWithdrawn > 0).reduce((sum, r) => sum + r.swpWithdrawn, 0);
+            
+            const sustainabilityCard = isSustainable ? 
+                `<div class="summary-card success"><h4>Strategy Viability</h4><div class="value">✅ SUSTAINABLE</div></div>` :
+                `<div class="summary-card danger"><h4>Strategy Viability</h4><div class="value">❌ FAILS ${monthsToDepletion}M</div></div>`;
+            
+            let debtFreeCard = '';
+            if (debtFreeMonth > 0 && debtFreeMonth < 180) {
+                debtFreeCard = `<div class="summary-card success"><h4>Freedom Month</h4><div class="value">Month ${debtFreeMonth}</div></div>`;
+            } else if (debtFreeMonth === 180) {
+                debtFreeCard = `<div class="summary-card warning"><h4>Freedom Month</h4><div class="value">Month 180</div></div>`;
+            } else {
+                debtFreeCard = `<div class="summary-card danger"><h4>Freedom Month</h4><div class="value">Not Achieved</div></div>`;
+            }
+            
+            summaryCards.innerHTML = `
+                <div class="summary-card">
+                    <h4>Monthly EMI/SWP</h4>
+                    <div class="value">₹${emi.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
+                </div>
+                ${debtFreeCard}
+                <div class="summary-card">
+                    <h4>Reduction Periods</h4>
+                    <div class="value">${corpusReducingMonths}</div>
+                </div>
+                ${sustainabilityCard}
+                <div class="summary-card">
+                    <h4>Total SWP Deployed</h4>
+                    <div class="value">₹${totalSWP.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
+                </div>
+                <div class="summary-card">
+                    <h4>Final Wealth (15Y)</h4>
+                    <div class="value">₹${finalCorpus.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
+                </div>
+            `;
+            
+            if (debtFreeMonth > 0) {
+                phaseIndicator.innerHTML = `
+                    <h4>🎯 Strategic Timeline Execution</h4>
+                    <p><strong>Phase 1 (Months 1-${debtFreeMonth}):</strong> SWP = ₹${emi.toLocaleString('en-IN', {maximumFractionDigits: 0})}</p>
+                    <p><strong>Phase 2 (Months ${debtFreeMonth + 1}-180):</strong> SWP = ₹0, Accelerated Growth at ${(afterTaxReturn * 100).toFixed(2)}%</p>
+                `;
+            } else {
+                phaseIndicator.innerHTML = `
+                    <h4>⚠️ Strategy Optimization Required</h4>
+                    <p>Current parameters require adjustment to achieve debt freedom within the projected timeline. Consider increasing investment allocation or extending tenure.</p>
+                `;
+            }
+        }
+
+        // Debounced calculate function for input events
+        const debouncedCalculate = debounce(calculateWithPerformance, 300);
+
+        // Attach debouncedCalculate to inputs on load
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', debouncedCalculate);
+            });
+            calculateWithPerformance();
+        });
+    </script>
+</body>
+</html>
